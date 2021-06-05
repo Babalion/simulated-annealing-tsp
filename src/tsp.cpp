@@ -311,7 +311,8 @@ void RuntimeGUI::notify(const TSPInstance & instance, const Optimizer::Config & 
         p2.x = (instance.getCities()[config.bestState[(i+1)%config.state.size()]].second - minX)* compression+5;
         p2.y = (instance.getCities()[config.bestState[(i+1)%config.state.size()]].first - minY)* compression+5;
 
-        cv::line(gui, p1, p2, cv::Scalar(0,255,255), 1, CV_AA);
+        //fix compatability to OpenCV 4.5.2 like mentioned in https://github.com/pupil-labs/pupil/issues/1154#issuecomment-382023750
+        cv::line(gui, p1, p2, cv::Scalar(0,255,255), 1, cv::LINE_AA);
     }
     // Paint the current path
     for (size_t i = 0; i < config.state.size(); i++)
@@ -323,7 +324,7 @@ void RuntimeGUI::notify(const TSPInstance & instance, const Optimizer::Config & 
         p2.x = (instance.getCities()[config.state[(i+1)%config.state.size()]].second - minX)* compression+5;
         p2.y = (instance.getCities()[config.state[(i+1)%config.state.size()]].first - minY)* compression+5;
 
-        cv::line(gui, p1, p2, cv::Scalar(255,0,255), 2, CV_AA);
+        cv::line(gui, p1, p2, cv::Scalar(255,0,255), 2, cv::LINE_AA);
     }
 
     // Paint the cities
