@@ -1,5 +1,7 @@
 #include "tsp.h"
 
+#include <random>
+
 ////////////////////////////////////////////////////////////////////////////////
 /// TSPInstance
 ////////////////////////////////////////////////////////////////////////////////
@@ -7,7 +9,7 @@
 void TSPInstance::createRandom(int n)
 {
     // We generate cities on a 1000x1000 pixel plane
-    std::mt19937 generator({std::random_device{}()});
+    std::mt19937 generator(std::random_device{}());
     std::uniform_real_distribution<float> distribution(0.0f,999.0f);
 
     for (int i = 0; i < n; i++)
@@ -110,8 +112,7 @@ void Optimizer::optimize(const TSPInstance& instance, std::vector<int> & result)
     }
 
     // Shuffle the array randomly
-    std::srand ( unsigned ( std::time(0) ) );
-    std::random_shuffle(config.state.begin() + 1, config.state.end());
+    std::shuffle(config.state.begin() + 1, config.state.end(), std::mt19937(std::random_device()()));
     
     config.energy = instance.calcTourLength(config.state);
     
@@ -119,17 +120,17 @@ void Optimizer::optimize(const TSPInstance& instance, std::vector<int> & result)
     
     config.temp = coolingSchedule->initialTemp();
     
-    std::mt19937 g({std::random_device{}()});
+    std::mt19937 g(std::random_device{}());
     // Set up an initial distribution over the possible moves
     std::uniform_int_distribution<int> moveDist(0,static_cast<int>(moves.size()) - 1);
     // A uniform distribution for the acceptance probability
     std::uniform_real_distribution<float> uniformDist(0.0f,1.0f);
     
     // Set up the mover service 
-    Optimizer::MoveService* service = new Optimizer::MoveService(n);
-    for (size_t i = 0; i < moves.size(); i++)
+    auto* service = new Optimizer::MoveService(n);
+    for (auto move : moves)
     {
-        moves[i]->setMoveService(service);
+        move->setMoveService(service);
     }
     
     // The current proposal/neighbor
@@ -188,9 +189,9 @@ void Optimizer::optimize(const TSPInstance& instance, std::vector<int> & result)
             if ((loopCounter % notificationCycle) == 0)
             {
                 // Yes, we should
-                for (size_t i = 0; i < observers.size(); i++)
+                for (auto observer : observers)
                 {
-                    observers[i]->notify(instance, config);
+                    observer->notify(instance, config);
                 }
             }
             loopCounter++;
@@ -198,10 +199,10 @@ void Optimizer::optimize(const TSPInstance& instance, std::vector<int> & result)
     }
     
     // Unregister the move service
-    DELETE_PTR(service);
-    for (size_t i = 0; i < moves.size(); i++)
+    DELETE_PTR(service)
+    for (auto move : moves)
     {
-        moves[i]->setMoveService(0);
+        move->setMoveService(nullptr);
     }
     
     result = config.bestState;
@@ -210,9 +211,9 @@ void Optimizer::optimize(const TSPInstance& instance, std::vector<int> & result)
     config.terminated = true;
     config.state = config.bestState;
     config.energy = config.bestEnergy;
-    for (size_t i = 0; i < observers.size(); i++)
+    for (auto observer : observers)
     {
-        observers[i]->notify(instance, config);
+        observer->notify(instance, config);
     }
 }
 
@@ -284,12 +285,12 @@ void RuntimeGUI::notify(const TSPInstance & instance, const Optimizer::Config & 
     float maxX = std::numeric_limits<float>::min();
     float maxY = std::numeric_limits<float>::min();
 
-    for (size_t i = 0; i < instance.getCities().size(); i++)
+    for (const auto & i : instance.getCities())
     {
-        minX = std::min(minX, instance.getCities()[i].second);
-        minY = std::min(minY, instance.getCities()[i].first);
-        maxX = std::max(maxX, instance.getCities()[i].second);
-        maxY = std::max(maxY, instance.getCities()[i].first);
+        minX = std::min(minX, i.second);
+        minY = std::min(minY, i.first);
+        maxX = std::max(maxX, i.second);
+        maxY = std::max(maxY, i.first);
     }
 
     // Calculate the compression factor
@@ -311,7 +312,7 @@ void RuntimeGUI::notify(const TSPInstance & instance, const Optimizer::Config & 
         p2.x = (instance.getCities()[config.bestState[(i+1)%config.state.size()]].second - minX)* compression+5;
         p2.y = (instance.getCities()[config.bestState[(i+1)%config.state.size()]].first - minY)* compression+5;
 
-        //fix compatability to OpenCV 4.5.2 like mentioned in https://github.com/pupil-labs/pupil/issues/1154#issuecomment-382023750
+        //fix compatibility to OpenCV 4.5.2 like mentioned in https://github.com/pupil-labs/pupil/issues/1154#issuecomment-382023750
         cv::line(gui, p1, p2, cv::Scalar(0,255,255), 1, cv::LINE_AA);
     }
     // Paint the current path
@@ -328,11 +329,11 @@ void RuntimeGUI::notify(const TSPInstance & instance, const Optimizer::Config & 
     }
 
     // Paint the cities
-    for (size_t i = 0; i < instance.getCities().size(); i++)
+    for (const auto & i : instance.getCities())
     {
         cv::Point p1;
-        p1.x = (instance.getCities()[i].second - minX)* compression+5;
-        p1.y = (instance.getCities()[i].first - minY)* compression+5;
+        p1.x = (i.second - minX)* compression+5;
+        p1.y = (i.first - minY)* compression+5;
 
         cv::circle(gui, p1, 2, cv::Scalar(200,200,200), 2);
     }
