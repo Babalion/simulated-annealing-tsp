@@ -114,17 +114,23 @@ void Optimizer::optimize(const TSPInstance& instance, std::vector<int> & result)
     
     // Set up the runtime configuration
     Config config;
-    
-    // Set up some initial tour
-    config.state.resize(n);
-    config.bestState.resize(n);
-    for (int i = 0; i < n; i++)
-    {
-        config.state[i] = i;
-    }
 
-    // Shuffle the array randomly
-    std::shuffle(config.state.begin() + 1, config.state.end(), std::mt19937(std::random_device()()));
+    if(static_cast<int>(result.size())==n){// if the given result is already a valid tour //TODO test this case better
+        config.state=result;
+        config.bestState=result;
+    }
+    else{// otherwise generate a new random one
+        // Set up some initial tour
+        config.state.resize(n);
+        config.bestState.resize(n);
+        for (int i = 0; i < n; i++)
+        {
+            config.state[i] = i;
+        }
+
+        // Shuffle the array randomly
+        std::shuffle(config.state.begin() + 1, config.state.end(), std::mt19937(std::random_device()()));
+    }
     
     config.energy = instance.calcTourLength(config.state);
     

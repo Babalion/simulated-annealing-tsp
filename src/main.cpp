@@ -69,17 +69,20 @@ int main(int argc, const char **argv) {
     gui.waitTime = 7;
 
     // Choose a cooling schedule
-    GeometricCoolingSchedule schedule(500, 1e-2, 0.99);
+    GeometricCoolingSchedule schedule(100, 1e-3, 0.99);
     optimizer.coolingSchedule = &schedule;
 
     // Optimizer loop counts
-    optimizer.outerLoops = 500;
-    optimizer.innerLoops = 5000;
+    optimizer.outerLoops = 1000;
+    optimizer.innerLoops = 2000;
     // Update the GUI every 2000 iterations
     optimizer.notificationCycle = 1000;
 
     // Run the program
     std::vector<int> result;
+    optimizer.optimize(instance, result);
+    optimizer.optimize(instance, result);
+    optimizer.optimize(instance, result);
     optimizer.optimize(instance, result);
 
     return 0;
