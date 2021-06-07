@@ -2,41 +2,26 @@
 #include <map>
 #include <string>
 
-int main(int argc, const char **argv) {
-    // Create an empty instance
+int main(int argc, const char** argv)
+{
+    // Set up a random problem instance
     TSPInstance instance;
-
-    std::cout << "Select a distribution of cities:" << std::endl;
-    std::cout << "Random (default=0)\nspecific tsp (1)\nnew-york (2)\n";
-    int inp = 0;
-    std::cin >> inp;
-    switch (inp) {
-        case 1: {
-            std::cout << "file-path:" << std::endl;
-            std::ifstream stream;
-            std::string path;
-            std::cin >> path;
-            stream.open(path.c_str());
-            if (!stream.is_open()) {
-                std::cout << "Cannot open data file.";
-                return 1;
-            }
-            instance.readTSPLIB(stream);
-            stream.close();
-            break;
+    if (argc > 1)
+    {
+        std::ifstream stream;
+        stream.open(argv[1]);
+        if(!stream.is_open())
+        {
+            std::cout << "Cannot open data file.";
+            return 1;
         }
-            /*case 2:
-                instance=tsp_newYork();
-                break;*/
-        default: {
-            std::cout << "How many cities?\n";
-            int cit = 0;
-            std::cin >> cit;
-            instance.createRandom(cit);
-        }
+        instance.readTSPLIB(stream);
+        stream.close();
     }
-
-
+    else
+    {
+        instance.createRandom(50);
+    }
     instance.calcDistanceMatrix();
 
     // Set up the optimizer 
