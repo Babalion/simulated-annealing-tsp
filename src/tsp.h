@@ -66,7 +66,7 @@ public:
     /**
      * Returns the distance between two cities
      */
-    float dist(const City & c1, const City & c2) const
+    static float dist(const City & c1, const City & c2)
     {
         const float temp1 = c1.first - c2.first;
         const float temp2 = c1.second - c2.second;
@@ -173,8 +173,8 @@ public:
         /**
          * Constructor
          */
-        MoveService(int numCities) : 
-            generator({std::random_device{}()}), 
+        explicit MoveService(int numCities) :
+            generator(std::random_device{}()),
             distribution(1, numCities-1) {}
             
         /**
@@ -217,14 +217,14 @@ public:
         /**
          * The move service
          */
-        MoveService* service;
+        MoveService* service{};
     };
     
     /**
      * Constructor
      */
     Optimizer() : 
-            coolingSchedule(0),
+            coolingSchedule(nullptr),
             outerLoops(100), 
             innerLoops(1000), 
             notificationCycle(250) {}
@@ -294,7 +294,7 @@ public:
     /**
      * Calculates the next temperature
      */
-    virtual float nextTemp(const Optimizer::Config & config) const
+    float nextTemp(const Optimizer::Config & config) const override
     {
         return std::max(config.temp * alpha, eTemp);
     }
@@ -302,7 +302,7 @@ public:
     /**
      * Returns the initial temperature
      */
-    virtual float initialTemp() const
+    float initialTemp() const override
     {
         return iTemp;
     }
@@ -330,7 +330,7 @@ public:
     /**
      * Computes a random neighbor according to some move strategy
      */
-    virtual void propose(std::vector<int> & state) const
+    void propose(std::vector<int> & state) const override
     {
         // Sample two random cities and reverse the chain
         std::reverse(state.begin() + service->sample() , state.begin() + service->sample());
@@ -345,7 +345,7 @@ public:
     /**
      * Computes a random neighbor according to some move strategy
      */
-    virtual void propose(std::vector<int> & state) const
+    void propose(std::vector<int> & state) const override
     {
         std::swap(state[service->sample()], state[service->sample()]);
     }
@@ -359,7 +359,7 @@ public:
     /**
      * Computes a random neighbor according to some move strategy
      */
-    virtual void propose(std::vector<int> & state) const
+    void propose(std::vector<int> & state) const override
     {
         std::vector<int> c({service->sample(),service->sample(),service->sample()});
         std::sort(c.begin(), c.end());
@@ -396,7 +396,7 @@ public:
     /**
      * Paint the gui
      */
-    virtual void notify(const TSPInstance & instance, const Optimizer::Config & config);
+    void notify(const TSPInstance & instance, const Optimizer::Config & config) override;
     
     /**
      * The time the GUI pauses after each update. Set to 0 to let

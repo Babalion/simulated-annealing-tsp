@@ -24,8 +24,8 @@
 #include <iomanip>
 #include <limits>
 #include <cassert>
-#include <time.h>
-#include <stdio.h>
+#include <ctime>
+#include <cstdio>
 /**
  * A very simple matrix class
  */
@@ -42,12 +42,12 @@ public:
 
     Matrix(int m, int n) : a(0), m(m), n(n)
     {
-        if (n*m) {
+        if (n*m!=0) {
                 a = new T[n*m];
         }
     }
 
-    /// Copy-Konstruktor
+    /// Copy-Constructor
     Matrix(const Matrix& mat) : a(0), m(mat.m), n(mat.n)
     {
         if (n*m)
@@ -87,7 +87,7 @@ public:
         return *this;
     }
 
-    /// Alle Eintraege auf Wert v setzen
+    /// Set all entries to 0
     Matrix& operator=(T v)
     {
         for (int k = 0; k < m*n; k++) {

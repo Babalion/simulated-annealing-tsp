@@ -98,7 +98,7 @@ void Optimizer::optimize(const TSPInstance& instance, std::vector<int> & result)
     
     assert(n > 0);
     // There has to be at least one move for the optimization to work
-    assert(moves.size() > 0);
+    assert(!moves.empty());
     
     // Set up the runtime configuration
     Config config;
