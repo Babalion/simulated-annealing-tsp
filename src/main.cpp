@@ -23,7 +23,7 @@ int main(int argc, const char **argv) {
         std::cout << std::left << std::setw(25) << "\t--random-map [N]"
                   << "Creates N random distributed cities on the field. N is the number of cities" << std::endl;
         std::cout << std::left << std::setw(25) << "\t--new-york [N]"
-                  << "Creates a quadratic 2D-Grid with N nodes" << std::endl;
+                  << "Creates a quadratic 2D-Grid with N nodes. The lowest energy is simply 1000*N" << std::endl;
         std::cout << std::left << std::setw(25) << "\t--tsp-file [PATH]" << "Initialize a given tsp-file" << std::endl;
         return 0;
     }
@@ -81,6 +81,7 @@ int main(int argc, const char **argv) {
     // Run the program
     std::vector<int> result;
     optimizer.optimize(instance, result);
+    schedule=GeometricCoolingSchedule(20,1e-3,0.99);
     optimizer.optimize(instance, result);
     optimizer.optimize(instance, result);
     optimizer.optimize(instance, result);

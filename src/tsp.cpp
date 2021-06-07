@@ -22,7 +22,7 @@ void TSPInstance::createRandom(int n)
 }
 // TODO create points within window dimensions
 void TSPInstance::createNewYork(int n) {
-    int latticeConst=1000/n;
+    float latticeConst=1000.0f/n;
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < n; ++j) {
@@ -162,7 +162,7 @@ void Optimizer::optimize(const TSPInstance& instance, std::vector<int> & result)
     {
         // Determine the next temperature
         config.temp = coolingSchedule->nextTemp(config);
-        
+
         // Simulate the markov chain
         for (config.inner = 0; config.inner < innerLoops; config.inner++)
         {
