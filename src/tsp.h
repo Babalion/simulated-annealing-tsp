@@ -39,7 +39,12 @@ public:
      * Creates a random TSP instance of n nodes
      */
     void createRandom(int n);
-    
+
+    /**
+     * Creates a New-York-like TSP instance (which is a simple quadratic 2D grid) with given n rows
+     */
+    void createNewYork(int n);
+
     /**
      * Reads a TSPLIB instance from a stream
      */
@@ -80,7 +85,7 @@ public:
     {
         return cities;
     }
-    
+
 private:
     /**
      * The positions of the cities

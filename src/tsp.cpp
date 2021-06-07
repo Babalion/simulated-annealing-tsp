@@ -5,7 +5,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 /// TSPInstance
 ////////////////////////////////////////////////////////////////////////////////
-
+// TODO create points within window dimensions
 void TSPInstance::createRandom(int n)
 {
     // We generate cities on a 1000x1000 pixel plane
@@ -18,6 +18,18 @@ void TSPInstance::createRandom(int n)
         City city = std::make_pair(distribution(generator), distribution(generator));
         // Add the city
         addCity(city);
+    }
+}
+// TODO create points within window dimensions
+void TSPInstance::createNewYork(int n) {
+    int latticeConst=1000/n;
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; ++j) {
+            City city = std::make_pair(i*latticeConst,j*latticeConst);
+            // Add the city
+            addCity(city);
+        }
     }
 }
 
