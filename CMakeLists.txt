@@ -13,7 +13,7 @@ else()
 endif()
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -pthread")
 set(CMAKE_C_FLAGS_DEBUG  "${CMAKE_C_FLAGS_DEBUG} -O0")
-set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DVERBOSE_MODE -g -O0")
 set(CMAKE_CXX_FLAGS_RELEASE "-Ofast")
 set(BUILD_ARCH "-m64")
 

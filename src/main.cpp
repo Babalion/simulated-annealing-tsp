@@ -2,24 +2,47 @@
 #include <map>
 #include <string>
 
-int main(int argc, const char** argv)
-{
+
+int main(int argc, const char **argv) {
+#ifdef VERBOSE_MODE
+    std::cout << "argc=" << argc << std::endl;
+    for (int i = 0; i < argc; ++i) {
+        std::cout << "argv[i]=" << argv[i] << std::endl;
+    }
+#endif
     // Set up a random problem instance
     TSPInstance instance;
-    if (argc > 1)
-    {
+    if (argc == 2 && std::string(argv[1]) == "--help") {
+        std::cout << "tsp [OPTIONS] [ARG]" << std::endl << std::endl;
+        std::cout << "Creates and tries to solve a Travelling-Salesman-Problem with simulated annealing algorithm."
+                  << std::endl
+                  << std::endl;
+
+        std::cout << std::left << std::setw(25) << "\t--help" << "Show this help" << std::endl;
+        std::cout << std::left << std::setw(25) << "\t--random-map [N]"
+                  << "Creates N random distributed cities on the field. N is the number of cities" << std::endl;
+        std::cout << std::left << std::setw(25) << "\t--new-york [N]"
+                  << "Creates a quadratic 2D-Grid with N nodes" << std::endl;
+        std::cout << std::left << std::setw(25) << "\t--tsp-file [PATH]" << "Initialize a given tsp-file" << std::endl;
+        return 0;
+    }
+    if (argc == 3 && std::string(argv[1]) == "--tsp-file") {
         std::ifstream stream;
-        stream.open(argv[1]);
-        if(!stream.is_open())
-        {
+        stream.open(argv[2]);
+        if (!stream.is_open()) {
             std::cout << "Cannot open data file.";
             return 1;
         }
         instance.readTSPLIB(stream);
         stream.close();
     }
-    else
-    {
+    if (argc == 3 && std::string(argv[1]) == "--random-map") {
+        instance.createRandom(std::stoi(argv[2]));
+    }
+    if (argc == 3 && std::string(argv[1]) == "--new-york") {
+        instance.createNewYork(std::stoi(argv[2]));
+    }
+    if (argc == 1) {
         instance.createRandom(50);
     }
     instance.calcDistanceMatrix();
