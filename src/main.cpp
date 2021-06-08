@@ -1,5 +1,4 @@
 #include "tsp.h"
-#include <map>
 #include <string>
 
 
@@ -48,7 +47,7 @@ int main(int argc, const char **argv) {
     }
     instance.calcDistanceMatrix();
 
-    // Set up the optimizer 
+    // Set up the optimizer
     Optimizer optimizer;
 
     // Register the moves
@@ -67,23 +66,20 @@ int main(int argc, const char **argv) {
     // The time the GUI stops after each iterations. Set to 0 to wait for a 
     // keypress
     gui.waitTime = 7;
-
-    // Choose a cooling schedule
-    GeometricCoolingSchedule schedule(100, 1e-3, 0.99);
-    optimizer.coolingSchedule = &schedule;
-
     // Optimizer loop counts
-    optimizer.outerLoops = 1000;
-    optimizer.innerLoops = 2000;
+    optimizer.innerLoops = 4000;
     // Update the GUI every 2000 iterations
     optimizer.notificationCycle = 1000;
 
     // Run the program
     std::vector<int> result;
+    // Choose a cooling schedule
+    GeometricCoolingSchedule geomSchedule(500, 30, 500u);
+    optimizer.setCoolingSchedule(&geomSchedule);
     optimizer.optimize(instance, result);
-    schedule=GeometricCoolingSchedule(20,1e-3,0.99);
-    optimizer.optimize(instance, result);
-    optimizer.optimize(instance, result);
+
+    LogarithmicCoolingSchedule logSchedule(200, 5, 500u);
+    optimizer.setCoolingSchedule(&logSchedule);
     optimizer.optimize(instance, result);
 
     return 0;

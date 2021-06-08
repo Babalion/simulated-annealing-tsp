@@ -136,7 +136,7 @@ void Optimizer::optimize(const TSPInstance& instance, std::vector<int> & result)
     
     config.bestEnergy = config.energy;
     
-    config.temp = coolingSchedule->initialTemp();
+    config.temp = coolingSchedule->getInitialTemp();
     
     std::mt19937 g(std::random_device{}());
     // Set up an initial distribution over the possible moves
