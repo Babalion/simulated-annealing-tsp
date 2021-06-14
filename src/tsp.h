@@ -150,7 +150,7 @@ public:
          */
         bool terminated;
         /**
-         * acceptnace rate
+         * acceptance rate
          */
         float acceptanceRate;
     };
