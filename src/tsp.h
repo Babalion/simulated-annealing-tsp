@@ -8,6 +8,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <queue>
 #include <opencv2/opencv.hpp>
 
 #include "util.h"
@@ -104,7 +105,9 @@ public:
      */
     class Config {
     public:
-        Config() : temp(0), outer(0), inner(0), energy(0), bestEnergy(0), terminated(false) {}
+        explicit Config(unsigned int lengthOfMemory) : temp(0), outer(0), inner(0), energy(0),
+                                                       lengthOfMemory(lengthOfMemory), bestEnergy(0),
+                                                       terminated(false), acceptanceRate(1) {}
 
         /**
          * The current temperature
@@ -123,6 +126,14 @@ public:
          */
         float energy;
         /**
+         * The last energy-steps
+         */
+        std::deque<float> lastEnergies;
+        /**
+         * number of saved last energies
+         */
+        unsigned int lengthOfMemory;
+        /**
          * The currently best energy found
          */
         float bestEnergy;
@@ -138,6 +149,10 @@ public:
          * Whether or not the system has terminated
          */
         bool terminated;
+        /**
+         * acceptnace rate
+         */
+        float acceptanceRate;
     };
 
     /**
@@ -244,7 +259,8 @@ public:
             innerLoops(1000),
             notificationCycle(1000),
             coolingSchedule(nullptr),
-            outerLoops(100) {}
+            outerLoops(100),
+            lengthOfMemory(0) {}
 
     /**
      * Constructor with given coolingSchedule
@@ -252,7 +268,8 @@ public:
     [[maybe_unused]] explicit Optimizer(CoolingSchedule *coolingSchedule) :
             innerLoops(1000),
             notificationCycle(1000),
-            coolingSchedule(coolingSchedule) { outerLoops = static_cast<int>(coolingSchedule->getSteps()); }
+            coolingSchedule(coolingSchedule),
+            lengthOfMemory(0) { outerLoops = static_cast<int>(coolingSchedule->getSteps()); }
 
     /**
      *Set a new cooling schedule and adjust the step-size
@@ -299,6 +316,13 @@ public:
         moves.push_back(move);
     }
 
+    /**
+     *  Change the memory of the last energies
+     */
+    void setLengthOfMemory(unsigned int n) {
+        lengthOfMemory = n;
+    }
+
 private:
     /**
      * A list of observers
@@ -316,6 +340,10 @@ private:
      * The number of outer iterations
      */
     int outerLoops;
+    /**
+    * length of memory
+    */
+    unsigned int lengthOfMemory;
 };
 
 /**
@@ -328,7 +356,7 @@ public:
      * Constructor with alpha, steps calculated
      */
     [[maybe_unused]] GeometricCoolingSchedule(float initialTemp, float endTemp, float alpha) :
-            CoolingSchedule(ceil(log(endTemp / initialTemp) / log(alpha)), initialTemp),
+            CoolingSchedule(static_cast<int>(ceil(log(endTemp / initialTemp) / log(alpha))), initialTemp),
             eTemp(endTemp),
             alpha(alpha) {}
 
@@ -338,7 +366,7 @@ public:
     [[maybe_unused]] GeometricCoolingSchedule(float initialTemp, float endTemp, unsigned int steps) :
             CoolingSchedule(steps, initialTemp),
             eTemp(endTemp) {
-        alpha = pow(endTemp / initialTemp, 1.0 / steps);
+        alpha = static_cast<float>(pow(endTemp / initialTemp, 1.0 / steps));
     }
 
     /**
@@ -398,6 +426,81 @@ private:
      * End temperature
      */
     float eTemp;
+};
+
+/**
+ * thermodynamic constant speed coolingSchedule inspired by
+ * https://doi.org/10.1016/0010-4655(88)90003-3
+ *
+ *  Yaghout Nourani and Bjarne Andresen 1998 J. Phys. A: Math. Gen. 31 8373
+ *  https://iopscience.iop.org/article/10.1088/0305-4470/31/41/011
+ */
+class TDConstSpeed1 : public Optimizer::CoolingSchedule {
+public:
+    /**
+    * Constructor with steps
+    */
+    [[maybe_unused]] TDConstSpeed1(float initialTemp, float endTemp, unsigned int steps) :
+            CoolingSchedule(steps, initialTemp), eTemp(endTemp) {}
+
+    /**
+     * Calculates the next temperature
+     */
+    float nextTemp(const Optimizer::Config &config) const override {
+        if (config.lastEnergies.size() <= 2) {
+            GeometricCoolingSchedule geom(initialTemp, initialTemp - 11, 5u);
+            return geom.nextTemp(config);
+        }
+        const unsigned int N = config.lengthOfMemory;
+        //estimate heat capacity C with C=std(lastEnergies)/temp^2
+        const float sum_E = std::accumulate(config.lastEnergies.begin(), config.lastEnergies.end(), 0.0f);
+        const float mean_E = sum_E / config.lastEnergies.size();
+
+        const double sq_sum_E = std::inner_product(config.lastEnergies.begin(), config.lastEnergies.end(),
+                                                   config.lastEnergies.begin(), 0.0);
+        const double stDev_E = std::sqrt(sq_sum_E / config.lastEnergies.size() - mean_E * mean_E);
+
+        auto C = static_cast<float>( stDev_E * stDev_E / config.temp / config.temp);
+        if (C != C) {// if C==nan
+            C = 5;
+        }
+        if (C <= 0.1) {
+            C = 0.1;
+        }
+
+        // estimate relaxation-time epsilon by fitting an exponential to the last energies
+        // decay rate is epsilon
+        // this is equivalent to fit a straight to log(lastEnergies), epsilon=-1/slope
+
+        float mean_logE = 0;
+        for (float lastEnergies : config.lastEnergies) {
+            mean_logE += log(lastEnergies);
+        }
+        mean_logE /= static_cast<float>(N);
+
+        float slopeNumerator = 0;
+        for (size_t i = 0; i < N; i++) {
+            slopeNumerator += (i - 0.5f * static_cast<float>(N + 1)) * (log(config.lastEnergies[i] - mean_logE));
+        }
+        float slopeDenumerator = 0;
+        for (size_t i = 0; i < N; ++i) {
+            slopeDenumerator += pow(static_cast<float>(i) - 0.5f * static_cast<float>(N + 1), 2.0f);
+        }
+        const float slope = slopeNumerator / slopeDenumerator;
+        const float epsilon = -1 / slope;
+
+        static const float v = 10.0f; //thermodynamic speed
+        const float decrease = (1 - v / epsilon / sqrt(C));
+        const float newTemp = config.temp * abs(decrease);
+        return std::max(eTemp, newTemp);
+    }
+
+private:
+    /**
+    * End temperature
+    */
+    float eTemp;
+
 };
 
 /**

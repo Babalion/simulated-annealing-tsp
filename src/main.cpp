@@ -43,7 +43,7 @@ int main(int argc, const char **argv) {
         instance.createNewYork(std::stoi(argv[2]));
     }
     if (argc == 1) {
-        instance.createRandom(50);
+        instance.createNewYork(15);
     }
     instance.calcDistanceMatrix();
 
@@ -67,20 +67,20 @@ int main(int argc, const char **argv) {
     // keypress
     gui.waitTime = 7;
     // Optimizer loop counts
-    optimizer.innerLoops = 4000;
+    optimizer.innerLoops = 5000;
     // Update the GUI every 2000 iterations
     optimizer.notificationCycle = 1000;
 
     // Run the program
     std::vector<int> result;
     // Choose a cooling schedule
-    GeometricCoolingSchedule geomSchedule(500, 30, 500u);
-    optimizer.setCoolingSchedule(&geomSchedule);
-    optimizer.optimize(instance, result);
+    TDConstSpeed1 tdcs1(200,1e-4,500u);
+    optimizer.setLengthOfMemory(100);
+    optimizer.setCoolingSchedule(&tdcs1);
+    for(size_t i=0;i<10;i++){
+        optimizer.optimize(instance, result);
+    }
 
-    LogarithmicCoolingSchedule logSchedule(200, 5, 500u);
-    optimizer.setCoolingSchedule(&logSchedule);
-    optimizer.optimize(instance, result);
 
     return 0;
 }
