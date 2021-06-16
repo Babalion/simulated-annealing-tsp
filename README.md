@@ -32,13 +32,21 @@ $ ./sa
 ## How do I change the parameters?
 
 All important parameters are defined in the main.cpp file. There you can adjust
-the number of iterations, the cooling schedule and the screen update cycle. 
+the number of iterations, the cooling schedule, and the screen update cycle. 
 Remember to recompile the project once you are finished updating the parameters. 
 
 ## What problem do we solve?
 
-If you run the program without any parameters, then a random set of cities is
-generated. However, you can test different datasets from the LIBTSP repository [1]. 
+- new-york street map, this is for benchmark purposes because we know the exact solution here
+- generate a random map
+- read in a tsp-file (discussed below)
+
+If you run the program without any parameters, then a new-york street map is generated.
+
+**Call the program from console with parameter `--help` to get more information.**
+
+-----
+You can test different datasets from the LIBTSP repository [1]. 
 Simply provide the filename of the .tsp file as the first argument. You 
 almost surely have to adjust the parameters in order to get a good approximation.
 
@@ -49,6 +57,12 @@ You can compare your results (using your parameters settings) to the optimal res
 
 The program only works with instances of type TSP and edge weight type EUC_2D. 
 
+##Implemented cooling schedules
+
+- Geometric schedule
+- logarithmic schedule [8]
+- constant thermodynamic speed in order 1 [6-10]
+
 ## What do the lines represent?
 
 The yellow line shows the shortest cycle that has been found so far. The purple
@@ -56,9 +70,9 @@ line shows the current state.
 
 ## Resources
 
-[1]: http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/
+[1]: TSPLIB95, University of Heidelberg. http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/
 
-[2]: http://www.iwr.uni-heidelberg.de/groups/comopt/software/TSPLIB95/STSP.html
+[2]: TSPLIB95 best solutions found, University of Heidelberg. http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/STSP.html
 
 [3]: D. Bertsimas and J. Tsitsiklis. Simulated Annealing. Statistical Science Vol. 8 No. 1, pages 10-15, 1993
 
@@ -66,7 +80,25 @@ line shows the current state.
 
 [5]: C. Geyer. Markov Chain Monte Carlo Lecture Notes. http://www.stat.umn.edu/geyer/f05/8931/n1995.pdf
 
-# License
+[6]: Yaghout Nourani and Bjarne Andresen 1998 J. Phys. A: Math. Gen. 31 8373. https://iopscience.iop.org/article/10.1088/0305-4470/31/41/011
+
+[7]: Andresen B., Gordon J.M. (1996) Constant thermodynamic speed simulated annealing. In: Jacobsen B.H., Mosegaard K., Sibani P. (eds) Inverse Methods. Lecture Notes in Earth Sciences, vol 63. Springer, Berlin, Heidelberg. https://doi.org/10.1007/BFb0011789
+
+[8]: Performance Analysis of Simulated Annealing Cooling Schedules in the Context of Dense Image Matching https://www.doi.org/10.13053/CyS-21-3-2553
+
+[9]: Salamon et al., Simulated annealing with constant thermodynamic speed. https://doi.org/10.1016/0010-4655(88)90003-3
+
+[10]: Abdellatif El Afia et al., A Self Controlled Simulated Annealing Algorithm using Hidden Markov Model State Classification. https://doi.org/10.1016/j.procs.2019.01.024
+
+
+
+
+#License
+This is a fork of https://github.com/deerishi/tsp-using-simulated-annealing-c-
+Thanks a lot!
+
+The MIT License (MIT) Copyright (c) 2021 Babalion
+## Original License
 
 The MIT License (MIT) Copyright (c) 2016 Tobias Pohlen
 
