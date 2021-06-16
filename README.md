@@ -94,8 +94,9 @@ line shows the current state.
 
 
 #License
-This is a fork of https://github.com/deerishi/tsp-using-simulated-annealing-c-
-Thanks a lot!
+This is a fork of https://github.com/TobyPDE/simulated-annealing-tsp
+
+**Thanks a lot!**
 
 The MIT License (MIT) Copyright (c) 2021 Babalion
 ## Original License
